@@ -1,12 +1,13 @@
-name: scanthecode
-on: push:
-  branches:
-    - main
+name: test and scan
+on:
+  push:
+    branches:
+      - main
 permissions:
   contents: read
 jobs:
-  testandscan:
+  test_and_scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
