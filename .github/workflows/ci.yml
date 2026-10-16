@@ -23,4 +23,4 @@ jobs:
           pip install -r services/tasks-api/requirements.txt
     
       - name: run tests
-        run: pytest tasks-api
+        run: pytest services/tasks-api
