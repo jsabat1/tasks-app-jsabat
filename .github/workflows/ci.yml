@@ -27,4 +27,10 @@ jobs:
           pip install -r services/${{ matrix.service }}/requirements.txt
     
       - name: run tests
-        run: pytest services/${{ matrix.service }}
+        run: pytest services/${{ matrix.service }} | tee ${{matrix.python-version}}-${{matrix.service}}-test-results.txt
+      
+      - name: upload test results
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{matrix.python-version}}-${{matrix.service}}-test-results
+          path: ${{matrix.python-version}}-${{matrix.service}}-test-results.txt
