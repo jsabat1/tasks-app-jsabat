@@ -67,14 +67,17 @@ jobs:
           name: title-normalizer-3.12-bandit-report
           path: _site
       #nowe
+
       - uses: actions/download-artifact@v8
         with:
-          name: tasks-api-3.12-bandit-report
+          name: tasks-api-3.12-docs
           path: _site/tasks-api-docs
-      #- uses: actions/download-artifact@v8
-      #  with:
-      #    name: title-normalizer-3.12-docs
-      #    path: _site/title-normalizer-docs
+          
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: title-normalizer-3.12-docs
+          path: _site/title-normalizer-docs
         #/nowe
       - run: |
           cat > _site/index.html <<'EOF'
