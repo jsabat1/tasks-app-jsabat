@@ -37,6 +37,16 @@ jobs:
         with:
           name: ${{matrix.service}}-${{matrix.python-version}}-bandit-report
           path: ${{matrix.service}}-${{matrix.python-version}}-bandit-report.html
+      #nowe
+      - run: pip install pdoc
+      - run: pdoc services/${{matrix.service}} -o ${{matrix.service}}-docs
+        continue-on-error: true
+      - name: upload api docs
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{matrix.service}}-${{matrix.python-version}}-docs
+          path: ${{matrix.service}}-docs
+      #/nowe
   deploy:
     needs: run_tests
     if: github.event.pull_request.merged == true
@@ -56,11 +66,25 @@ jobs:
         with:
           name: title-normalizer-3.12-bandit-report
           path: _site
+      #nowe
+      - uses: actions/download-artifact@v8
+        with:
+          name: tasks-api-3.12-docs
+          path: _site/tasks-api-docs
+      - uses: actions/download-artifact@v8
+        with:
+          name: title-normalizer-3.12-docs
+          path: _site/title-normalizer-docs
+        #/nowe
       - run: |
           cat > _site/index.html <<'EOF'
           <h1>Bandit reports</h1>
           <p><a href="tasks-api-3.12-bandit-report.html">tasks-api</a></p>
           <p><a href="title-normalizer-3.12-bandit-report.html">title-normalizer</a></p>
+          
+          <h1>api docs</h1>
+          <p><a href="tasks-api-docs/">tasks-api Docs</a></p>
+          <p><a href="title-normalizer-docs/">title-normalizer Docs</a></p>
           EOF
       - uses: actions/upload-pages-artifact@v5
         with:
