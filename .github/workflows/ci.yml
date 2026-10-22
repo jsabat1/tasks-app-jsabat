@@ -49,7 +49,7 @@ jobs:
       #/nowe
   deploy:
     needs: run_tests
-    if: github.event.pull_request.merged == true
+    #if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     environment: 
       name: github-pages
