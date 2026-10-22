@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [closed]
+    branches:
+      - main
 
 jobs:
   run_tests:
@@ -35,6 +39,7 @@ jobs:
           path: ${{matrix.service}}-${{matrix.python-version}}-bandit-report.html
   deploy:
     needs: run_tests
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     environment: 
       name: github-pages
