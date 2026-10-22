@@ -47,6 +47,17 @@ jobs:
         with:
           name: tasks-api-3.12-bandit-report
           path: _site/index.html
+      - run |
+        cat > _site/index.html <<EOF
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Bandit Report</title>
+        </head>
+        <body>
+        <p><a href="tasks-api-3.12-bandit-report.html">Bandit Report for Python 3.10</a></p>
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
