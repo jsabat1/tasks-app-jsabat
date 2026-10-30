@@ -102,8 +102,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [tasks-api, title-normalizer]
+        service: [tasks-api, title-normalizer] # ${{matrix.service}}
     steps:
       - uses: actions/checkout@v7
       - name: Build Docker Image
-        run: docker build -t ${{matrix.service}}:latest services/${{matrix.service}}
+        run: docker build -t ${{matrix.service}}:services/${{matrix.service}}
