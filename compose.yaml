@@ -1,0 +1,23 @@
+services:
+  tasks-api:
+    container_name: tasks_api
+    build: ./services/tasks-api
+    ports:
+      - "5000:5000" 
+  
+    environment:
+      NORMALIZER_URL: http://title_normalizer:5001
+    networks:
+      - tasks-app-network
+
+  title-normalizer:
+    container_name: title_normalizer
+    build: ./services/title-normalizer
+    ports:
+      - "5001:5001"
+    networks:
+      - tasks-app-network 
+
+networks:
+  tasks-app-network:
+    name: tasks-app-network  
