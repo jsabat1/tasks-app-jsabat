@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [tasks-api, title-normalizer] # ${{matrix.service}}
+        service: [tasks-api, title-normalizer] 
     steps:
       - uses: actions/checkout@v7
       - name: Build Docker Image
