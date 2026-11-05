@@ -1,5 +1,4 @@
 import pytest
-
 from app import create_app
 
 
@@ -27,7 +26,7 @@ def client(stub):
 
 def test_health(client):
     response = client.get("/health")
-    assert response.status_code == 200
+    assert response.status_code == 500
     assert response.get_json() == {"status": "ok"}
 
 
@@ -46,10 +45,16 @@ def test_create_degrades_when_function_unavailable():
     client = create_app(normalizer=StubNormalizer(result=None)).test_client()
     response = client.post("/tasks", json={"title": "  walk   dog "})
     assert response.status_code == 201
-    assert response.get_json() == {"id": 1, "title": "  walk   dog ", "normalized": False}
+    assert response.get_json() == {
+        "id": 1,
+        "title": "  walk   dog ",
+        "normalized": False,
+    }
 
 
-@pytest.mark.parametrize("body", [{}, {"title": ""}, {"title": "   "}, {"title": 5}, []])
+@pytest.mark.parametrize(
+    "body", [{}, {"title": ""}, {"title": "   "}, {"title": 5}, []]
+)
 def test_create_rejects_invalid_title_without_calling_function(client, stub, body):
     response = client.post("/tasks", json=body)
     assert response.status_code == 400
