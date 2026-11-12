@@ -57,6 +57,59 @@ jobs:
           name: ${{matrix.service}}-api-docs
           path: services/${{matrix.service}}/apidocs
 
+  build_images:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [tasks-api, title-normalizer] # ${{matrix.service}}
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t ${{matrix.service}} services/${{matrix.service}}
+
+  scan_images:
+    needs: build_images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [tasks-api, title-normalizer] # ${{matrix.service}}
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t ${{matrix.service}} services/${{matrix.service}}
+      # trivy-action v0.36.0
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{matrix.service}}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+  publish_images:
+    needs: scan_images
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service: [tasks-api, title-normalizer] # ${{matrix.service}}
+    steps:
+      - uses: actions/checkout@v7
+      - run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" |
+            docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/${{matrix.service}}"
+          IMAGE="$IMAGE:${{ github.sha }}"
+          SOURCE="https://github.com/${{ github.repository }}"
+          docker build \
+            --label "org.opencontainers.image.source=$SOURCE" \
+            -t "$IMAGE" services/${{matrix.service}}
+          docker push "$IMAGE"
+
   deploy:
     needs: [run_tests, generate_api_docs]
     if: github.event.pull_request.merged == true
@@ -98,34 +151,3 @@ jobs:
           path: _site
       - id: deployment
         uses: actions/deploy-pages@v5
-  build_images:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [tasks-api, title-normalizer] 
-    steps:
-      - uses: actions/checkout@v7
-      - name: Build Docker Image
-        run: docker build -t ${{matrix.service}} services/${{matrix.service}}
-
-  publish_images:
-    needs: build_images
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      matrix:
-        service: [tasks-api, title-normalizer]
-    steps:
-      - uses: actions/checkout@v7
-      
-      - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        
-      - name: Build and Push Docker Image
-        run: |
-          IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t $IMAGE_NAME:${{ github.sha }} services/${{ matrix.service }}
-          docker push $IMAGE_NAME:${{ github.sha }}
